@@ -1,3 +1,4 @@
+# get_worker_client.py
 import asyncio
 import json
 import sys
@@ -41,7 +42,7 @@ class MCPClient:
             args=[server_script_path],
             env=None # Use current environment variables
         )
-
+        
         stdio_transport = await self.exit_stack.enter_async_context(stdio_client(server_params))
         self.stdio, self.write = stdio_transport
         self.session = await self.exit_stack.enter_async_context(ClientSession(self.stdio, self.write))
@@ -215,6 +216,7 @@ async def main():
 
     client = MCPClient()
     try:
+        print("Connecting to server...")
         await client.connect_to_server(sys.argv[1])
         await client.chat_loop()
     finally:
