@@ -120,5 +120,5 @@ async def test_query():
         return {"error": str(e)}
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))  # IBM Cloud 通常使用 PORT 环境变量
+    port = int(os.getenv("PORT", 8080)) 
     uvicorn.run(app, host="0.0.0.0", port=port)
