@@ -1,18 +1,39 @@
 steps:
+  # Clone the GitHub repository
+  - name: 'gcr.io/cloud-builders/git'
+    id: 'clone-repository'
+    args: ['clone', '--depth=1', 'https://github.com/XinghanGuo1019/AI.git', 'repository']
+   
+  # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ai-app:$SHORT_SHA', '.']
+    id: 'build-image'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ai-app:latest', '.']
+    dir: 'repository'
+    waitFor: ['clone-repository']
+   
+  # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/ai-app:$SHORT_SHA']
-  - name: 'gcr.io/google-cloud-sdk'
-    entrypoint: 'gcloud'
+    id: 'push-image'
+    args: ['push', 'gcr.io/$PROJECT_ID/ai-app:latest']
+    waitFor: ['build-image']
+   
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-cloudrun'
     args:
       - 'run'
       - 'deploy'
       - 'workday-mcp'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/ai-app:$SHORT_SHA'
+      - 'gcr.io/$PROJECT_ID/ai-app:latest'
       - '--region'
       - 'europe-west3'
       - '--platform'
       - 'managed'
-      - '--allow-unauthenticated' 
+      - '--allow-unauthenticated'
+    waitFor: ['push-image']
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  
+timeout: 1200s
